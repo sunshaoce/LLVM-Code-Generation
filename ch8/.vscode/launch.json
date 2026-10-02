@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug opt (LLDB DAP)",
+      "type": "lldb-dap",
+      "request": "launch",
+      "program": "${env:HOME}/dev/llvm-project/build/bin/opt",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-S",
+        "-passes=instcombine",
+        "${workspaceFolder}/canonical_form.ll",
+        "-o",
+        "-"
+      ]
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-target triple="aarch64-apple-ios"
+target triple = "riscv64-unknown-linux-gnu"
 
-define void @bar(ptr %src, ptr %dst) {
+define void @bar(ptr %src, ptr %dst) #0 {
   %v0 = load i64, ptr %src
   %src1 = getelementptr i64, ptr %src, i64 1
   %v1 = load i64, ptr %src1
@@ -9,3 +9,5 @@ define void @bar(ptr %src, ptr %dst) {
   store i64 %v1, ptr %dst1
   ret void
 }
+
+attributes #0 = { "target-features"="+v,+unaligned-scalar-mem" }

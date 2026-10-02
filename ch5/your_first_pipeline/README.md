@@ -15,7 +15,14 @@ Then, run this pipeline on the given `Module` argument of the `runYourTurnPassPi
 ## Configuring your build environment ##
 
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
 ```
 
 This will initialize your build directory in `build` (the `-B` option) with Ninja (`-G` option).
@@ -68,7 +75,15 @@ The default implementation uses the function adapter and to use the dedicated fu
 You can achieve this by using for instance the following CMake command to configure your build directory.
 
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG='-DUSE_MODULE_MGR'-DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -DCMAKE_CXX_FLAGS_DEBUG='-g -DUSE_MODULE_MGR' \
+  -Bbuild .
 ```
 
 Next, run your pass pipeline like you did previously and observe how the output of the pass pipeline changes.

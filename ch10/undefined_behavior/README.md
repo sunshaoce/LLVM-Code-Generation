@@ -17,7 +17,14 @@ To fix the UB, please implement the specifications put as comments before the im
 ## Configure your build directory ##
 
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
 ```
 
 This will initialize your build directory in `build` (the `-B` option) with Ninja (`-G` option).
@@ -33,12 +40,12 @@ ninja -C build
 
 This builds the default target in the build directory.
 
-This should produce in the `build` directory a binary named `use_after_free`.
+This should produce in the `build` directory a binary named `fct_with_ub`.
 
 ## Run ##
 
 ```bash
-./build/fct_w_ub -- someNumber
+./build/fct_with_ub -- someNumber
 ```
 
 This will run the function that relies on UB on `someNumber`.
@@ -50,13 +57,21 @@ By default `someNumber == 12`.
 
 Configure your build with undefined sanitizer enabled and build:
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild_w_ubsan . -DCMAKE_CXX_FLAGS=-fsanitize=undefined
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -DCMAKE_CXX_FLAGS=-fsanitize=undefined \
+  -Bbuild_w_ubsan .
 ninja -C build_w_ubsan
 ```
 
 Then run the application:
 ```bash
-build_w_ubsan/fct_w_ub -- someNumber
+build_w_ubsan/fct_with_ub -- someNumber
 ```
 
 If you use a negative number, you should get an error that resembles:

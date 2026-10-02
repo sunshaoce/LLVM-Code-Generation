@@ -26,13 +26,13 @@ using namespace llvm;
 // }
 //
 // The proposed ABI is:
-// - 32-bit arguments are passed through registers: w0, w1
-// - 32-bit returned values are passed through registers: w0, w1
-// w0 and w1 are given as argument of this Function.
+// - 32-bit arguments use a0, a1, sign-extended to 64 bits.
+// - 32-bit return values use a0, sign-extended to 64 bits.
+// a0 and a1 are given as arguments of this function.
 //
 // The local variable named var is expected to live on the stack.
 MachineFunction *populateMachineIR(MachineModuleInfo &MMI, Function &Foo,
-                                   Register W0, Register W1) {
+                                   Register A0, Register A1) {
   MachineFunction &MF = MMI.getOrCreateMachineFunction(Foo);
 
   // The type for bool.

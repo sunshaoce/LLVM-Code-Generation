@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug llvm-tblgen (LLDB DAP)",
+      "type": "lldb-dap",
+      "request": "launch",
+      "program": "${env:HOME}/dev/llvm-project/build/bin/llvm-tblgen",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-print-records",
+        "${workspaceFolder}/person.td"
+      ]
+    }
+  ]
+}

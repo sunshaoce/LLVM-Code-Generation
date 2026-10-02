@@ -14,4 +14,10 @@
 
 using namespace llvm;
 
+#if LLVM_VERSION_MAJOR >= 23
+MyTargetInstrInfo::MyTargetInstrInfo(const TargetSubtargetInfo &STI,
+                                   const TargetRegisterInfo &TRI)
+    : MyTargetGenInstrInfo(STI, TRI) {}
+#else
 MyTargetInstrInfo::MyTargetInstrInfo() : MyTargetGenInstrInfo() {}
+#endif

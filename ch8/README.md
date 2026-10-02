@@ -1,8 +1,17 @@
 In this chapter you can discover the transformations performed by some of the optimizations passes.
 
+The target-specific inputs use RV64. Vectorization examples enable the RISC-V vector extension (`+v`); the exact transformations depend on LLVM's RISC-V cost model.
+
 To see that in action, first setup your build directory:
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
 ```
 
 Then, when you'll invoke `ninja`, it will run all the passes exercised in this folder.

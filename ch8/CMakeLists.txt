@@ -35,12 +35,12 @@ set(standard_passes
     loop-vectorize
     reassociate
     simplifycfg
-    slp-vectorizer
 )
 
 foreach(standard_pass IN LISTS standard_passes)
   add_run_passes(OPT_RUN_DEPENDENCIES "${standard_pass}" ${standard_pass}.ll)
 endforeach()
+add_run_passes(OPT_RUN_DEPENDENCIES "slp-vectorizer -slp-threshold=-3" slp-vectorizer.ll)
 
 # Create an executable target that depends on the generated file
 add_custom_target(${CURR_TARGET}

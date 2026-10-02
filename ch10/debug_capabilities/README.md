@@ -2,6 +2,8 @@
 
 In this exercise, we run an input module, `hadd_vector.ll` in the `O3` optimization pipeline (with `opt`).
 
+The input modules target RV64 with the RISC-V vector extension (`+v`) enabled.
+
 The goal here is for you to find when the 4 adds in the input IR gets replaced in one horizontal add (llvm.vector.reduce.add.)
 
 To find this, you need to use `-print-after-all` to find which pass does the transformation you are looking for.
@@ -15,7 +17,14 @@ The steps below shows you how to produce the interesting command line invocation
 ## Configure your build directory ##
 
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
 ```
 
 This will initialize your build directory in `build` (the `-B` option) with Ninja (`-G` option).

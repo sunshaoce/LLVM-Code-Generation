@@ -9,7 +9,14 @@ To do that, read the direction in `yourTurn-instrinfo.td`, implement the missing
 ## Configure your build directory ##
 
 ```bash
-cmake -GNinja -DCMAKE_BUILD_TYPE=Debug -DLLVM_DIR=<path/to/llvm/install>/lib/cmake/llvm/ -Bbuild .
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
 ```
 
 This will initialize your build directory in `build` (the `-B` option) with Ninja (`-G` option).
@@ -27,7 +34,7 @@ This builds the default target in the build directory.
 
 Then run:
 ```bash
-./build/print_inst
+./build/print_instr
 ```
 
 This will print all the non generic instructions.

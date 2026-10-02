@@ -1,6 +1,5 @@
 include "llvm/Target/Target.td"
 
-def : HwMode<"", []>;
 def myii: InstrInfo;
 def : Target {
   let InstructionSet = myii;

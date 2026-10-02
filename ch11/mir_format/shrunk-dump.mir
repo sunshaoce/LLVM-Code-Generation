@@ -1,29 +1,34 @@
 ---
 name:            _Z3fooPxx
 tracksRegLiveness: true
+frameInfo:
+  adjustsStack:    true
+  hasCalls:        true
+  maxCallFrameSize: 0
 body:             |
   bb.0:
-    liveins: $x0, $x1
+    liveins: $x10, $x11
   
-    %3:gpr64 = COPY $x1
-    %2:gpr64 = COPY $x0
-    TBZX %3, 63, %bb.2
-    B %bb.1
+    %3:gpr = COPY $x11
+    %2:gpr = COPY $x10
+    BGE %3, $x0, %bb.2
+    PseudoBR %bb.1
   
   bb.1:
-    ADJCALLSTACKDOWN 0, 0, implicit-def dead $sp, implicit $sp
-    $x0 = COPY %3
-    BL 123, csr_darwin_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $x0, implicit-def $sp, implicit-def $x0
-    ADJCALLSTACKUP 0, 0, implicit-def dead $sp, implicit $sp
-    %4:gpr64all = COPY $x0
-    %0:gpr64all = COPY %4
+    ADJCALLSTACKDOWN 0, 0, implicit-def dead $x2, implicit $x2
+    $x10 = COPY %3
+    PseudoCALL target-flags(riscv-call) &_Z3barx, csr_ilp32_lp64, implicit-def dead $x1, implicit $x10, implicit-def $x2, implicit-def $x10
+    ADJCALLSTACKUP 0, 0, implicit-def dead $x2, implicit $x2
+    %4:gpr = COPY $x10
+    %0:gpr = COPY %4
   
   bb.2:
-    %1:gpr64 = PHI %3, %bb.0, %0, %bb.1
-    %5:gpr64common = ADDXrs %2, %1, 3
-    %6:gpr32 = LDRWui killed %5, 36 :: (load (s32), align 8)
-    %7:gpr32 = COPY %1.sub_32
-    $w0 = ADDWrr %6, %7
-    RET_ReallyLR implicit $w0
+    %1:gpr = PHI %3, %bb.0, %0, %bb.1
+    %5:gpr = SLLI %1, 3
+    %6:gpr = ADD killed %5, %2
+    %7:gpr = LD killed %6, 144 :: (load (s64), align 8)
+    %8:gpr = nsw ADD killed %7, %1
+    $x10 = COPY %8
+    PseudoRET implicit $x10
 
 ...

@@ -114,9 +114,23 @@ The exercises have been tested with the open source repository of LLVM at the Gi
 
 Some of the exercises interact directly with the LLVM C++ API. This API has no stability guarantee therefore it is possible that newer or older version of LLVM will not work with these exercises.
 
-For the exercices that requires a version of LLVM handy, if you build your own make sure to use the `CMAKE_INSTALL_PREFIX` cmake variable to set the install path, then build the `install` target.
+For exercises that use the LLVM C++ API, build LLVM in `~/dev/llvm-project/build`. Install Ninja, Clang (`clang` and `clang++`), and LLD (`ld.lld`), and make sure they are available on your `PATH`.
 
-Then, you will need to provide this path to CMake in the different exercise.
+Run the following command from the exercise directory containing `CMakeLists.txt`:
+
+```bash
+cmake -GNinja \
+  -DCMAKE_BUILD_TYPE=Debug \
+  -DLLVM_DIR="$HOME/dev/llvm-project/build/lib/cmake/llvm" \
+  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -Bbuild .
+ninja -Cbuild
+```
+
+`LLVM_DIR` points to the directory containing `LLVMConfig.cmake` inside your LLVM build tree. These options select a Debug build with Clang and LLD and export `build/compile_commands.json` for editor and tooling support. Each exercise README includes the same configuration, with additional options where needed.
 
 Follow the READMEs in the different directories when you get there.
   </details>

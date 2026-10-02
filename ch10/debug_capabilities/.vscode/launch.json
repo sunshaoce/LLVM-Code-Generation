@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug opt (LLDB DAP)",
+      "type": "lldb-dap",
+      "request": "launch",
+      "program": "${env:HOME}/dev/llvm-project/build/bin/opt",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-S",
+        "-O3",
+        "-print-after-all",
+        "${workspaceFolder}/hadd_vector.ll",
+        "-o",
+        "-"
+      ]
+    }
+  ]
+}

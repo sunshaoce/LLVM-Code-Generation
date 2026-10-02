@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug llc (LLDB DAP)",
+      "type": "lldb-dap",
+      "request": "launch",
+      "program": "${env:HOME}/dev/llvm-project/build/bin/llc",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "-stop-before=peephole-opt",
+        "${workspaceFolder}/input.ll",
+        "-o",
+        "-"
+      ]
+    }
+  ]
+}

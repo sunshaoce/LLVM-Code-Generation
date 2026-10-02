@@ -1,7 +1,7 @@
-target triple = "arm64-apple-macosx14.0.0"
+target triple = "riscv64-unknown-linux-gnu"
 
 
-define void @foo(ptr noalias noundef %arg, ptr noalias noundef %arg1, ptr noalias noundef %arg2) {
+define void @foo(ptr noalias noundef %arg, ptr noalias noundef %arg1, ptr noalias noundef %arg2) #0 {
 bb:
   br label %bb3
 
@@ -27,3 +27,5 @@ bb4:
 bb15:
   ret void
 }
+
+attributes #0 = { "target-features"="+v" }

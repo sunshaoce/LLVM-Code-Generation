@@ -26,14 +26,14 @@ using namespace llvm;
 // }
 //
 // The proposed ABI is:
-// - 32-bit arguments are passed through registers: w0, w1
-// - 32-bit returned values are passed through registers: w0, w1
-// w0 and w1 are given as argument of this Function.
+// - 32-bit arguments use a0, a1, sign-extended to 64 bits.
+// - 32-bit return values use a0, sign-extended to 64 bits.
+// a0 and a1 are given as arguments of this function.
 //
 // The local variable named var is expected to live on the stack.
 MachineFunction *solutionPopulateMachineIR(MachineModuleInfo &MMI,
-                                           Function &Foo, Register W0,
-                                           Register W1) {
+                                           Function &Foo, Register A0,
+                                           Register A1) {
   MachineFunction &MF = MMI.getOrCreateMachineFunction(Foo);
   // Create the 3 basic blocks that compose Foo.
   MachineBasicBlock *EntryBB = MF.CreateMachineBasicBlock();
@@ -52,6 +52,8 @@ MachineFunction *solutionPopulateMachineIR(MachineModuleInfo &MMI,
   LLT I1 = LLT::scalar(1);
   // The type of var.
   LLT I32 = LLT::scalar(32);
+  // The type of the RV64 argument and return registers.
+  LLT I64 = LLT::scalar(64);
   MachinePointerInfo PtrInfo;
   Align VarStackAlign(4);
   // The type for the address of var.
@@ -63,8 +65,10 @@ MachineFunction *solutionPopulateMachineIR(MachineModuleInfo &MMI,
   // Populate entry.
   MachineIRBuilder MIBuilder(*EntryBB, EntryBB->end());
   // Get the input arguments.
-  Register A = MIBuilder.buildCopy(I32, W0).getReg(0);
-  Register B = MIBuilder.buildCopy(I32, W1).getReg(0);
+  Register A =
+      MIBuilder.buildTrunc(I32, MIBuilder.buildCopy(I64, A0)).getReg(0);
+  Register B =
+      MIBuilder.buildTrunc(I32, MIBuilder.buildCopy(I64, A1)).getReg(0);
   // Get the stack slot for var.
   Register VarStackAddr =
       MIBuilder.buildFrameIndex(VarAddrLLT, FrameIndex).getReg(0);
@@ -88,37 +92,38 @@ MachineFunction *solutionPopulateMachineIR(MachineModuleInfo &MMI,
   // ThenBB
   // Reset MIBuilder to point at the end of ThenBB.
   MIBuilder.setInsertPt(*ThenBB, ThenBB->end());
-  // Put var in W0 for the call to bar.
+  // Put var in a0 for the call to bar.
   Register ReloadedVar1 =
       MIBuilder.buildLoad(I32, VarStackAddr, PtrInfo, VarStackAlign).getReg(0);
-  MIBuilder.buildCopy(W0, ReloadedVar1);
+  MIBuilder.buildCopy(A0, MIBuilder.buildSExt(I64, ReloadedVar1));
   // Fake call to bar.
   MIBuilder.buildInstr(TargetOpcode::INLINEASM, {}, {})
-      .addExternalSymbol("bl @bar")
+      .addExternalSymbol("call bar")
       .addImm(0)
-      .addReg(W0, RegState::Implicit);
+      .addReg(A0, RegState::Implicit);
   // Fake call to baz.
   MIBuilder.buildInstr(TargetOpcode::INLINEASM, {}, {})
-      .addExternalSymbol("bl @baz")
+      .addExternalSymbol("call baz")
       .addImm(0)
-      .addReg(W0, RegState::Implicit | RegState::Define);
+      .addReg(A0, RegState::Implicit | RegState::Define);
   // Copy the result of baz to var.
-  Register ResOfBaz = MIBuilder.buildCopy(I32, W0).getReg(0);
+  Register ResOfBaz =
+      MIBuilder.buildTrunc(I32, MIBuilder.buildCopy(I64, A0)).getReg(0);
   MIBuilder.buildStore(ResOfBaz, VarStackAddr, PtrInfo, VarStackAlign);
   // Fallthrough to exit BB, no need for a terminator
 
   // ExitBB
   // Reset MIBuilder to point at the end of ExitBB.
   MIBuilder.setInsertPt(*ExitBB, ExitBB->end());
-  // Put var in W0 for the call to bar.
+  // Put var in a0 for the call to bar.
   Register ReloadedVar2 =
       MIBuilder.buildLoad(I32, VarStackAddr, PtrInfo, VarStackAlign).getReg(0);
-  MIBuilder.buildCopy(W0, ReloadedVar2);
+  MIBuilder.buildCopy(A0, MIBuilder.buildSExt(I64, ReloadedVar2));
   // Fake call to bar.
   MIBuilder.buildInstr(TargetOpcode::INLINEASM, {}, {})
-      .addExternalSymbol("bl @bar")
+      .addExternalSymbol("call bar")
       .addImm(0)
-      .addReg(W0, RegState::Implicit);
+      .addReg(A0, RegState::Implicit);
   // End of the function, return void;
   MIBuilder.buildInstr(TargetOpcode::INLINEASM, {}, {})
       .addExternalSymbol("ret")

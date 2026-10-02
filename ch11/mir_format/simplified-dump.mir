@@ -1,10 +1,10 @@
 --- |
   ; ModuleID = 'input.ll'
   source_filename = "input.ll"
-  target datalayout = "e-m:o-i64:64-i128:128-n32:64-S128-Fn32"
-  target triple = "arm64-apple-macosx14.0.0"
+  target datalayout = "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128"
+  target triple = "riscv64-unknown-linux-gnu"
   
-  define i32 @_Z3fooPxx(ptr nocapture noundef readonly %arg, i64 noundef %arg1) local_unnamed_addr {
+  define i32 @_Z3fooPxx(ptr noundef readonly captures(none) %arg, i64 noundef %arg1) local_unnamed_addr {
   bb:
     %i = icmp slt i64 %arg1, 0
     br i1 %i, label %bb2, label %bb4
@@ -24,55 +24,61 @@
   }
   
   declare i64 @_Z3barx(i64 noundef) local_unnamed_addr
-
 ...
 ---
 name:            _Z3fooPxx
 alignment:       4
 tracksRegLiveness: true
+noPhis:          false
+isSSA:           true
+noVRegs:         false
+hasFakeUses:     false
 registers:
-  - { id: 0, class: gpr64all }
-  - { id: 1, class: gpr64 }
-  - { id: 2, class: gpr64 }
-  - { id: 3, class: gpr64 }
-  - { id: 4, class: gpr64all }
-  - { id: 5, class: gpr64common }
-  - { id: 6, class: gpr32 }
-  - { id: 7, class: gpr32 }
-  - { id: 8, class: gpr32 }
+  - { id: 0, class: gpr }
+  - { id: 1, class: gpr }
+  - { id: 2, class: gpr }
+  - { id: 3, class: gpr }
+  - { id: 4, class: gpr }
+  - { id: 5, class: gpr }
+  - { id: 6, class: gpr }
+  - { id: 7, class: gpr }
+  - { id: 8, class: gpr }
 liveins:
-  - { reg: '$x0', virtual-reg: '%2' }
-  - { reg: '$x1', virtual-reg: '%3' }
+  - { reg: '$x10', virtual-reg: '%2' }
+  - { reg: '$x11', virtual-reg: '%3' }
 frameInfo:
   maxAlignment:    1
   adjustsStack:    true
   hasCalls:        true
+  framePointerPolicy: none
   maxCallFrameSize: 0
-machineFunctionInfo: {}
+machineFunctionInfo:
+  varArgsFrameIndex: 0
+  varArgsSaveSize: 0
 body:             |
   bb.0.bb:
     successors: %bb.1(0x30000000), %bb.2(0x50000000)
-    liveins: $x0, $x1
+    liveins: $x10, $x11
   
-    %3:gpr64 = COPY $x1
-    %2:gpr64 = COPY $x0
-    TBZX %3, 63, %bb.2
-    B %bb.1
+    %3:gpr = COPY $x11
+    %2:gpr = COPY $x10
+    BGE %3, $x0, %bb.2
+    PseudoBR %bb.1
   
   bb.1.bb2:
-    ADJCALLSTACKDOWN 0, 0, implicit-def dead $sp, implicit $sp
-    $x0 = COPY %3
-    BL @_Z3barx, csr_darwin_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $x0, implicit-def $sp, implicit-def $x0
-    ADJCALLSTACKUP 0, 0, implicit-def dead $sp, implicit $sp
-    %4:gpr64all = COPY $x0
-    %0:gpr64all = COPY %4
+    ADJCALLSTACKDOWN 0, 0, implicit-def dead $x2, implicit $x2
+    $x10 = COPY %3
+    PseudoCALL target-flags(riscv-call) @_Z3barx, csr_ilp32_lp64, implicit-def dead $x1, implicit $x10, implicit-def $x2, implicit-def $x10
+    ADJCALLSTACKUP 0, 0, implicit-def dead $x2, implicit $x2
+    %4:gpr = COPY $x10
+    %0:gpr = COPY %4
   
   bb.2.bb4:
-    %1:gpr64 = PHI %3, %bb.0, %0, %bb.1
-    %5:gpr64common = ADDXrs %2, %1, 3
-    %6:gpr32 = LDRWui killed %5, 36 :: (load (s32) from %ir.i7, align 8)
-    %7:gpr32 = COPY %1.sub_32
-    $w0 = ADDWrr %6, %7
-    RET_ReallyLR implicit $w0
-
+    %1:gpr = PHI %3, %bb.0, %0, %bb.1
+    %5:gpr = SLLI %1, 3
+    %6:gpr = ADD killed %5, %2
+    %7:gpr = LD killed %6, 144 :: (load (s64) from %ir.i7)
+    %8:gpr = nsw ADD killed %7, %1
+    $x10 = COPY %8
+    PseudoRET implicit $x10
 ...

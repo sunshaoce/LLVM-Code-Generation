@@ -2,6 +2,7 @@
 #include "YourTurnRegisterInfo.h"
 
 #include "llvm/CodeGen/TargetRegisterInfo.h"
+#include "llvm/Config/llvm-config.h"
 #include "llvm/MC/MCRegisterInfo.h" // For the RegUnit iterators.
 #include "llvm/Support/Debug.h"     // For dbgs().
 
@@ -20,7 +21,12 @@ int main() {
     // Traverse all the units and print out which registers it touches.
     for (unsigned Unit = 0, E = TRI->getNumRegUnits(); Unit != E; ++Unit) {
       dbgs() << "RegUnit " << Unit << ":\t";
-      for (MCRegUnitRootIterator RI(Unit, TRI); RI.isValid(); ++RI) {
+#if LLVM_VERSION_MAJOR >= 23
+      MCRegUnitRootIterator RI(static_cast<MCRegUnit>(Unit), TRI);
+#else
+      MCRegUnitRootIterator RI(Unit, TRI);
+#endif
+      for (; RI.isValid(); ++RI) {
         for (MCSuperRegIterator SI(*RI, TRI, true); SI.isValid(); ++SI) {
           dbgs() << TRI->getName(*SI) << ", ";
         }
@@ -28,7 +34,8 @@ int main() {
       }
     }
     dbgs() << "== RegisterClass ==\n";
-    for (const TargetRegisterClass *RegClass : TRI->regclasses()) {
+    for (unsigned Class = 0, E = TRI->getNumRegClasses(); Class != E; ++Class) {
+      const TargetRegisterClass *RegClass = TRI->getRegClass(Class);
       dbgs() << "RegClass " << TRI->getRegClassName(RegClass) << ":\t";
       for (Register Reg : *RegClass) {
         dbgs() << TRI->getName(Reg) << ", ";

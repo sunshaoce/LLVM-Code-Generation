@@ -1,4 +1,4 @@
-target triple = "aarch64-apple-ios"
+target triple = "riscv64-unknown-linux-gnu"
 
 define i64 @foo(ptr %arg, i64 %ub) {
 bb:

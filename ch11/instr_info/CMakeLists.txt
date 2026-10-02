@@ -12,6 +12,11 @@ set(LLVM_TABLEGEN_EXE ${LLVM_TOOLS_BINARY_DIR}/llvm-tblgen)
 include(${LLVM_CMAKE_DIR}/AddLLVM.cmake)
 include(${LLVM_CMAKE_DIR}/TableGen.cmake)
 
+# LLVM 23 requires target register classes for pointer operands in pseudos.
+if(LLVM_VERSION_MAJOR GREATER_EQUAL 23)
+  list(APPEND LLVM_TABLEGEN_FLAGS -DLLVM_23_OR_NEWER)
+endif()
+
 # Create the different TableGen outputs.
 set(LLVM_TARGET_DEFINITIONS mytarget.td)
 tablegen(LLVM MyTargetGenRegisterInfo.inc -gen-register-info)

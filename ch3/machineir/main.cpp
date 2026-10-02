@@ -23,12 +23,12 @@ extern MachineFunction *populateMachineIR(MachineModuleInfo &,
                                                   llvm::Function &, Register,
                                                   Register);
 
-bool checkFunctionCorrectness(MachineFunction *Res, Register W0, Register W1) {
+bool checkFunctionCorrectness(MachineFunction *Res, Register A0, Register A1) {
   // Take care of the liveness since we did not explain how to do that.
   MachineBasicBlock *EntryBB = Res->empty() ? nullptr : &*Res->begin();
   if (EntryBB) {
-    EntryBB->addLiveIn(W0);
-    EntryBB->addLiveIn(W1);
+    EntryBB->addLiveIn(A0);
+    EntryBB->addLiveIn(A1);
   }
   Res->print(errs());
   if (!Res->verify()) {
@@ -44,11 +44,11 @@ int main() {
   // We need the MC layer as well to query the register information.
   InitializeAllTargetMCs();
 
-  auto TT(Triple::normalize("aarch64--"));
+  Triple TT(Triple::normalize("riscv64--"));
   std::string Error;
   const Target *TheTarget = TargetRegistry::lookupTarget(TT, Error);
   if (!TheTarget) {
-    errs() << TT << " is not available with this build of LLVM\n";
+    errs() << TT.getTriple() << " is not available with this build of LLVM\n";
     return -1;
   }
   auto *LLVMTM = static_cast<CodeGenTargetMachineImpl *>(
@@ -65,40 +65,40 @@ int main() {
   const TargetSubtargetInfo *STI = LLVMTM->getSubtargetImpl(*SolutionFoo);
   const TargetRegisterInfo *TRI = STI->getRegisterInfo();
 
-  // Find the indices for W0 and W1.
-  // Since we are not in AArch64 library we don't have access to the AArch64::W0
+  // Find the indices for a0 (X10) and a1 (X11).
+  // Since we are not in the RISCV library we don't have access to the RISCV::X10
   // enums.
-  StringRef W0Str = "W0";
-  StringRef W1Str = "W1";
-  Register W0 = 0;
-  Register W1 = 0;
-  for (unsigned i = 1, e = TRI->getNumRegs(); i != e && (!W0 || !W1); ++i) {
-    if (!W0 && W0Str == TRI->getName(i)) {
-      W0 = i;
+  StringRef A0Str = "X10";
+  StringRef A1Str = "X11";
+  Register A0 = 0;
+  Register A1 = 0;
+  for (unsigned i = 1, e = TRI->getNumRegs(); i != e && (!A0 || !A1); ++i) {
+    if (!A0 && A0Str == TRI->getName(i)) {
+      A0 = i;
       continue;
     }
-    if (!W1 && W1Str == TRI->getName(i)) {
-      W1 = i;
+    if (!A1 && A1Str == TRI->getName(i)) {
+      A1 = i;
       continue;
     }
   }
 
-  if (!W0 || !W1) {
-    errs() << "Failed to found physical registers w0 and w1\n";
+  if (!A0 || !A1) {
+    errs() << "Failed to find physical registers a0 and a1\n";
     return -1;
   }
 
   MachineFunction *Res =
-      solutionPopulateMachineIR(MMIWP.getMMI(), *SolutionFoo, W0, W1);
-  bool solutionIsCorrect = checkFunctionCorrectness(Res, W0, W1);
+      solutionPopulateMachineIR(MMIWP.getMMI(), *SolutionFoo, A0, A1);
+  bool solutionIsCorrect = checkFunctionCorrectness(Res, A0, A1);
 
   Function *Foo = Function::Create(
       FunctionType::get(Type::getVoidTy(Context), /*IsVarArg=*/false),
       Function::ExternalLinkage, "foo", MyModule);
 
   MachineFunction *YourTurnRes =
-      populateMachineIR(MMIWP.getMMI(), *Foo, W0, W1);
-  bool yourTurnIsCorrect = checkFunctionCorrectness(YourTurnRes, W0, W1);
+      populateMachineIR(MMIWP.getMMI(), *Foo, A0, A1);
+  bool yourTurnIsCorrect = checkFunctionCorrectness(YourTurnRes, A0, A1);
 
 
   return !(solutionIsCorrect && yourTurnIsCorrect);

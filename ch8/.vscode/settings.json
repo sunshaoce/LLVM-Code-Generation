@@ -1,0 +1,8 @@
+{
+  "lldb-dap.executable-path": "/home/ssc/usr/llvm-23.1.2/bin/lldb-dap",
+  "cmake.buildDirectory": "${workspaceFolder}/build",
+  "cmake.buildBeforeRun": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": true
+}

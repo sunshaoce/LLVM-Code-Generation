@@ -3,6 +3,7 @@
 
 #include "MyTargetRegisterInfo.h" // For the definition of the register class.
 #include "llvm/CodeGen/TargetInstrInfo.h"
+#include "llvm/Config/llvm-config.h"
 
 #define GET_INSTRINFO_HEADER
 #define GET_INSTRINFO_ENUM            // This should be in MC
@@ -13,7 +14,12 @@ namespace llvm {
 
 class MyTargetInstrInfo : public MyTargetGenInstrInfo {
 public:
+#if LLVM_VERSION_MAJOR >= 23
+  MyTargetInstrInfo(const TargetSubtargetInfo &STI,
+                    const TargetRegisterInfo &TRI);
+#else
   MyTargetInstrInfo();
+#endif
 };
 } // namespace llvm
 
