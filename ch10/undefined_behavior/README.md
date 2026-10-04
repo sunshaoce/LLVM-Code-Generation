@@ -23,7 +23,9 @@ cmake -GNinja \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_CXX_FLAGS_DEBUG="-g -stdlib=libc++" \
   -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -DCMAKE_BUILD_RPATH="$HOME/usr/llvm-23.1.2/lib/x86_64-unknown-linux-gnu" \
   -Bbuild .
 ```
 
@@ -63,7 +65,9 @@ cmake -GNinja \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DCMAKE_C_COMPILER=clang \
   -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_CXX_FLAGS_DEBUG="-g -stdlib=libc++" \
   -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld" \
+  -DCMAKE_BUILD_RPATH="$HOME/usr/llvm-23.1.2/lib/x86_64-unknown-linux-gnu" \
   -DCMAKE_CXX_FLAGS=-fsanitize=undefined \
   -Bbuild_w_ubsan .
 ninja -C build_w_ubsan
